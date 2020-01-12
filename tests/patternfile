@@ -1,0 +1,26 @@
+an empty line on line 2
+
+a line beginning with 'a line' on line 3
+
+^a line beginning with '^a line' on line 5
+
+a line containing '^a line' in the middle on line 7
+
+a line ending in '^' on line 9^
+
+a line ending in 'line 11' on line 11
+
+a line beginning with '\tfoo' on line 14:
+	foo but other stuff follows
+
+a line beginning with a literal '\t' on line 17
+\tfoo
+
+a line beginning with two tabs and ending with a ; on line 20
+		;
+
+a line ending in 'foo' followed by a line beginning with 'bar' on lines 23 and 24
+this line ends with foo
+bar is how this line begins
+
+a line ending in '$' on line 26$

@@ -1,0 +1,58 @@
+NAME=xpipe
+XPIPE=../${NAME}
+
+TDIR="$(mktemp -d ${TMPDIR:-/tmp}/${NAME}.test.XXXX)"
+STDERR="${TDIR}/stderr"
+
+UNAME="$(uname)"
+
+STAT_S="stat -f '%z'"
+if [ x"${UNAME}" = x"Linux" ]; then
+	STAT_S="stat -c '%s'"
+fi
+
+BYTEFILE="${TDIR}/bytes"
+LINEFILE="${TDIR}/lines"
+PATTERNFILE="./patternfile"
+CERTFILE="./certs"
+
+if [ ! -x ${XPIPE} ]; then
+	echo "${XPIPE} not found.  Please run 'make' first." >&2
+	exit 1
+fi
+
+begin() {
+	echo "=> Test $(basename ${0}): ${NAME}..."
+}
+
+cleanup() {
+	rm -fr "${TDIR}"
+}
+
+note() {
+	echo "==> ${1}"
+}
+
+end() {
+	echo "=> ok"
+}
+
+fail() {
+	echo "=> failed."
+	echo "Stderr follows:"
+	cat ${STDERR}
+	exit 1
+}
+
+if [ ! -f "${BYTEFILE}" ]; then
+	tr -dc '[:print:]' </dev/urandom |  head -c 500 >"${BYTEFILE}"
+fi
+if [ ! -f "${LINEFILE}" ]; then
+	i=1
+	while [ ${i} -le 100 ]; do
+		echo "line ${i}" >> "${LINEFILE}"
+		i=$(( i + 1 ))
+	done
+fi
+
+trap cleanup 0

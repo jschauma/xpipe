@@ -1,0 +1,220 @@
+.\" Originally written by Jan Schaumann <jschauma@netmeister.org> in January 2020.
+.Dd January 11, 2020
+.Dt xpipe 1
+.Os
+.Sh NAME
+.Nm xpipe
+.Nd split input and feed it into the given utility
+.Sh SYNOPSIS
+.Nm
+.Op Fl I
+.Op Fl J Ar replstr
+.Op Fl b Ar bytes
+.Op Fl n Ar lines
+.Op Fl p Ar pattern
+.Op Ar utility Op Ar argument ...
+.Sh DESCRIPTION
+The
+.Nm
+utility reads input from stdin and splits it by the
+given number of bytes, lines, or if matching the given
+pattern.
+It then invokes
+.Ar utility
+repeatedly, feeding it the generated data chunks as
+input.
+.Sh OPTIONS
+The following options are supported by
+.Nm :
+.Bl -tag -width pattern___
+.It Fl I
+Do not write incomplete data.
+.It Fl J Ar replstr
+When constructing the command to execute, replace the
+occurrence of
+.Ar replstr
+with the integer representing the number of invocation
+performed.
+.It Fl b Ar num
+Split input every
+.Ar num
+bytes.
+.It Fl n Ar num
+Split input every
+.Ar num
+lines.
+.It Fl p Ar pattern
+Split input by the given
+.Ar pattern .
+See section PATTERNS for details.
+.El
+.Sh DETAILS
+.Nm
+conceptually combines some of the functionality of the
+.Xr split 1 ,
+.Xr tee 1 ,
+and
+.Xr xargs 1
+utilities.
+That is, it allows for repeated execution of the given
+utitity, but unlike
+.Xr xargs 1 ,
+.Nm
+allows you to split the input and pipe it into the
+utility rather than passing it as arguments.
+.Pp
+This allows you to process input either in byte-,
+line-, or pattern-separated chunks and pipe those
+chunks into the same tool without having to manually
+split the input or store data in temporary files.
+.Pp
+Input processing is done sequentially: data is read up
+until the end of the given pattern (or until the given
+number of bytes or lines has been encountered); when
+that condition is encountered,
+.Ar utility
+is invoked and the data chunk is written into a pipe
+to that process;
+.Nm
+then waits for the process to complete, upon which it
+continues to read input.
+.Pp
+If EOF is reached before the given condition is met,
+then
+.Nm
+will execute
+.Ar utility
+and pipe into it whatever data it encountered so far.
+This can be avoided by passing the
+.Fl I
+flag, which leads to
+.Nm
+discarding any partial data without invoking
+.Ar utility
+(again or at all).
+.Sh PATTERNS
+When the
+.Fl p
+flag is specified,
+.Nm
+will split input by the given pattern with each chunk
+including the pattern as the last bytes.
+.Pp
+A pattern is, by and large, a simple, fixed string.
+That is, you cannot specify regular expressions or
+shell globs; all characters or bytes are matched
+verbatim with the exception of the following:
+.Bl -tag -width ch_
+.It ^
+If the '^' character is specified at the beginning of
+the pattern, then it will anchor the pattern at the
+beginning of the line.
+.Pp
+To match a literal '^' at the beginning of the line,
+escape the character using '^\\^'.
+For example, to match a line beginning with the string
+\'^foo', you'd use the pattern '^\\^foo'.
+.It $
+If the '$' character is specified at the end of the
+pattern (i.e., as the last character), then it will
+anchor the pattern at the end of the line.
+.Pp
+To match a literal '$' at the end of the line,
+escape the character using '\\$$'.
+For example, to match a line ending with 'foo', you'd
+use the pattern 'foo$'; To match a line ending with
+\'foo$', you'd use 'foo\\$$'.
+.It \(rsn
+This will match a new line (ASCII 10).
+The difference to '$' is that you can match a \\n
+anywhere in your pattern, while a '$' will only match
+at the end of he line.
+.Pp
+For example, to match a line ending in 'foo' followed
+by a line beginning with 'bar', you'd use the pattern
+\'foo\(rsnbar'.
+.It \(rst
+This will match a tab character (ASCII 9).
+.Pp
+For example, to match a line beginning with two tabs
+followed by the string 'foo', you'd use the pattern
+\'^\\t\\tfoo'.
+.El
+.Sh COMMAND INVOCATION
+.Nm
+will invoke the given
+.Ar utility
+with any subsequent arguments.
+If the
+.Fl J
+flag is specified, then the given
+.Ar replstr
+in any of the arguments (including the utility itself)
+will be replaced with the number of the invocation.
+.Pp
+Since I/O redirection is processed by the invoking
+shell, you'd have to invoke a new shell to allow for
+redirection to e.g. a per-invocation output file.
+.Pp
+For example, to split the input into unique files
+ending in the given pattern:
+.Bd -literal -offset indent
+<input xpipe -J % -p pattern /bin/sh -c "cat >%.out"
+.Ed
+.Sh EXAMPLES
+The following examples illustrate common usage of this tool.
+.Pp
+To count the number of words in each paragraph of 'Don
+Quijote':
+.Bd -literal -offset indent
+curl -s https://www.gutenberg.org/cache/epub/2000/pg2000.txt | \\
+        tr -d '^M' \\
+        xpipe -p '^$' wc -w
+.Ed
+.Pp
+To extract the subjects of all certificates in a
+standard PEM formatted x.509 trust bundle:
+.Bd -literal -offset indent
+<certs.pem xpipe -p '^-----END CERTIFICATE-----$' \\
+        openssl x509 -noout -subject
+.Ed
+.Pp
+To split a large, uncompressed log file into multiple,
+compressed files, named 1.gz, 2.gz, ... n.gz:
+.Bd -literal -offset indent
+<logfile xpipe -n 1000 -J % /bin/sh -c "gzip >%.gz"
+.Ed
+.Sh EXIT STATUS
+The
+.Nm
+utility exits with a value of 0 if no error occurs.
+If
+.Ar utility
+cannot be found,
+.Nm
+exits with a value of 127;
+if
+.Ar utility
+cannot be executed,
+.Nm
+exits with a value of 126;
+if
+.Ar utility
+terminated because of a signal,
+.Nm
+exits with a value of 125.
+If any other error occurs,
+.Nm
+exits with a value of 1.
+.Sh SEE ALSO
+.Xr split 1 ,
+.Xr tee 1 ,
+.Xr xargs 1
+.Sh HISTORY
+.Nm
+was originally written by
+.An Jan Schaumann
+.Aq jschauma@netmeister.org
+in January 2020.
+.Sh BUGS
+Please file bugs and feature requests by emailing the author.
