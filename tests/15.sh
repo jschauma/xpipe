@@ -33,7 +33,7 @@ ln $(which sleep) "${TDIR}/sleep"
 bgpid=$!
 
 sleep 1
-pkill "${TDIR}/sleep"
+pkill -f  "^${TDIR}/sleep 300"
 
 wait ${bgpid}
 

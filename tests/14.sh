@@ -6,9 +6,9 @@ NAME="gzip example"
 
 begin
 
-WANTED="$(echo $(wc -l </var/log/messages))"
+WANTED="$(echo $(wc -l <"${CERTFILE}"))"
 
-<"/var/log/messages" ${XPIPE} -n 100 -J % /bin/sh -c "gzip >${TDIR}/%.gz"
+<"${CERTFILE}" ${XPIPE} -n 10 -J % /bin/sh -c "gzip >${TDIR}/%.gz"
 
 GOT="$(echo $(gzcat ${TDIR}/*.gz | wc -l))"
 

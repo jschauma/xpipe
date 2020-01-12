@@ -45,7 +45,7 @@ fail() {
 }
 
 if [ ! -f "${BYTEFILE}" ]; then
-	tr -dc '[:print:]' </dev/urandom |  head -c 500 >"${BYTEFILE}"
+	LANG=C tr -dc '[:print:]' </dev/urandom |  head -c 500 >"${BYTEFILE}"
 fi
 if [ ! -f "${LINEFILE}" ]; then
 	i=1
