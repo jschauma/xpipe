@@ -57,6 +57,20 @@ to '/usr/local' but you can change the PREFIX:
 $ make PREFIX=~ install
 ```
 
+Platforms
+=========
+
+xpipe(1) was developed on a NetBSD 8.0 system.  It was
+tested and confirmed to build and pass all tests on:
+
+- NetBSD 8.0
+- macOS 10.15.2
+- RHEL 6.10
+- RHEL 7.6
+
+If you run into build/test issues, please [email
+me](mailto:jschauma@netmeister.org).
+
 ---
 
 ```
