@@ -1,9 +1,9 @@
 Quick Summary
 =============
 
-The xpipe utility reads input from stdin and splits it
+The xpipe command reads input from stdin and splits it
 by the given number of bytes, lines, or if matching
-the given pattern.  It then invokes utility
+the given pattern.  It then invokes the given utility
 repeatedly, feeding it the generated data chunks as
 input.
 
@@ -82,9 +82,10 @@ SYNOPSIS
 	   [utility [argument ...]]
 
 DESCRIPTION
-     The xpipe utility reads input from stdin and splits it by the given num-
+     The xpipe command reads input from stdin and splits it by the given num-
      ber of bytes, lines, or if matching the given pattern.  It then invokes
-     utility repeatedly, feeding it the generated data chunks as input.
+     the given utility repeatedly, feeding it the generated data chunks as
+     input.
 
 OPTIONS
      The following options are supported by xpipe:

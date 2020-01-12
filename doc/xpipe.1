@@ -1,5 +1,5 @@
 .\" Originally written by Jan Schaumann <jschauma@netmeister.org> in January 2020.
-.Dd January 11, 2020
+.Dd January 12, 2020
 .Dt xpipe 1
 .Os
 .Sh NAME
@@ -16,10 +16,10 @@
 .Sh DESCRIPTION
 The
 .Nm
-utility reads input from stdin and splits it by the
+command reads input from stdin and splits it by the
 given number of bytes, lines, or if matching the given
 pattern.
-It then invokes
+It then invokes the given
 .Ar utility
 repeatedly, feeding it the generated data chunks as
 input.

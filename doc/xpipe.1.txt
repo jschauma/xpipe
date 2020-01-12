@@ -8,9 +8,10 @@ SYNOPSIS
 	   [utility [argument ...]]
 
 DESCRIPTION
-     The xpipe utility reads input from stdin and splits it by the given num-
+     The xpipe command reads input from stdin and splits it by the given num-
      ber of bytes, lines, or if matching the given pattern.  It then invokes
-     utility repeatedly, feeding it the generated data chunks as input.
+     the given utility repeatedly, feeding it the generated data chunks as
+     input.
 
 OPTIONS
      The following options are supported by xpipe:
@@ -138,4 +139,4 @@ HISTORY
 BUGS
      Please file bugs and feature requests by emailing the author.
 
-NetBSD 8.0		       January 11, 2020			    NetBSD 8.0
+NetBSD 8.0		       January 12, 2020			    NetBSD 8.0
