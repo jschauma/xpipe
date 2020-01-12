@@ -39,6 +39,8 @@
 #include <string.h>
 #include <unistd.h>
 
+extern char *__progname;
+
 char *pattern, *replstr;
 
 int IFlag = 0;
@@ -68,9 +70,8 @@ main(int argc, char **argv) {
 	pattern = replstr = NULL;
 	byteCount = lineCount = 0;
 
-	setprogname(argv[0]);
-
-	while ((ch = getopt(argc, argv, "IJ:b:n:p:")) != -1) {
+	/* GNU getopt(3) needs '+' to enable POSIXLY_CORRECT behavior. */
+	while ((ch = getopt(argc, argv, "+IJ:b:n:p:")) != -1) {
 		switch(ch) {
 		case 'I':
 			IFlag = 1;
@@ -198,7 +199,7 @@ execCommand(char **argv, int argc, int num, char *data) {
 		}
 	} else if (WIFSIGNALED(status)) {
 		if (WTERMSIG(status) < NSIG) {
-			warnx("%s terminated by SIG%s", largv[0], sys_signame[WTERMSIG(status)]);
+			warnx("%s terminated by SIG%s", largv[0], strsignal(WTERMSIG(status)));
 		} else {
 			warnx("%s terminated by signal %d", largv[0], WTERMSIG(status));
 		}
@@ -218,7 +219,7 @@ void
 usage() {
 	(void)fprintf(stderr,
 "Usage: %s [-I] [-J replstr] [-b bytes] [-n lines] [-p pattern]\n"
-"             [utility [argument ...]]\n", getprogname());
+"             [utility [argument ...]]\n", __progname);
 }
 
 void

@@ -7,7 +7,7 @@ NAME="split by literal \\t"
 begin
 
 WANTED="$(grep -c '\\tfoo' "${PATTERNFILE}")"
-GOT="$(echo $(${XPIPE} -I -p '\\tfoo' sed -n -e '$p' <"${PATTERNFILE}"| wc -l))"
+GOT="$(echo $(${XPIPE} -I -p '\\tfoo' awk 'END { print }' <"${PATTERNFILE}"| wc -l))"
 
 if [ x"${WANTED}" != x"${GOT}" ]; then
 	echo "Unexpected output '${GOT}'." >> "${STDERR}"

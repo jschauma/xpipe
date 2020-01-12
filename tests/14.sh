@@ -10,7 +10,7 @@ WANTED="$(echo $(wc -l <"${CERTFILE}"))"
 
 <"${CERTFILE}" ${XPIPE} -n 10 -J % /bin/sh -c "gzip >${TDIR}/%.gz"
 
-GOT="$(echo $(gzcat ${TDIR}/*.gz | wc -l))"
+GOT="$(echo $(gzip -d -c ${TDIR}/*.gz | wc -l))"
 
 if [ x"${WANTED}" != x"${GOT}" ]; then
 	echo "Unexpected output '${GOT}'." >> "${STDERR}"
