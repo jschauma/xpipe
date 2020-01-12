@@ -108,7 +108,7 @@ EXAMPLES
      To count the number of words in each paragraph of 'Don Quijote':
 
 	   curl -s https://www.gutenberg.org/cache/epub/2000/pg2000.txt | \
-		   tr -d '^M' \
+		   tr -d '^M' | \
 		   xpipe -p '^$' wc -w
 
      To extract the subjects of all certificates in a standard PEM formatted

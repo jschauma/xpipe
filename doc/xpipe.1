@@ -168,7 +168,7 @@ To count the number of words in each paragraph of 'Don
 Quijote':
 .Bd -literal -offset indent
 curl -s https://www.gutenberg.org/cache/epub/2000/pg2000.txt | \\
-        tr -d '^M' \\
+        tr -d '^M' | \\
         xpipe -p '^$' wc -w
 .Ed
 .Pp
