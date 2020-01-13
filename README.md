@@ -78,7 +78,7 @@ NAME
      xpipe -- split input and feed it into the given utility
 
 SYNOPSIS
-     xpipe [-] [-J replstr] [-b bytes] [-n lines] [-p pattern]
+     xpipe [-Ic] [-J replstr] [-b bytes] [-n lines] [-p pattern]
 	   [utility [argument ...]]
 
 DESCRIPTION
