@@ -78,7 +78,7 @@ NAME
      xpipe -- split input and feed it into the given utility
 
 SYNOPSIS
-     xpipe [-I] [-J replstr] [-b bytes] [-n lines] [-p pattern]
+     xpipe [-] [-J replstr] [-b bytes] [-n lines] [-p pattern]
 	   [utility [argument ...]]
 
 DESCRIPTION
@@ -97,6 +97,8 @@ OPTIONS
 		 invocation performed.
 
      -b num	 Split input every num bytes.
+
+     -c		 Continue even if utility failed.
 
      -n num	 Split input every num lines.
 
@@ -197,10 +199,16 @@ EXAMPLES
 	   <logfile xpipe -n 1000 -J % /bin/sh -c "gzip >%.gz"
 
 EXIT STATUS
-     The xpipe utility exits with a value of 0 if no error occurs.  If utility
-     cannot be found, xpipe exits with a value of 127; if utility cannot be
-     executed, xpipe exits with a value of 126; if utility terminated because
-     of a signal, xpipe exits with a value of 125.  If any other error occurs,
+     The xpipe command exits with a value of 0 if no error occurs.
+
+     If the -c flag is passed, xpipe will exit with an integer value repre-
+     senting the total number of invocations of the utility that failed.
+
+     If the -c was not passed, then any failure in the execution of the
+     utility leads to the termination of xpipe.	 That is, if the utility can-
+     not be found, xpipe exits with a value of 127; if utility cannot be exe-
+     cuted, xpipe exits with a value of 126; if utility terminated because of
+     a signal, xpipe exits with a value of 125.	 If any other error occurs,
      xpipe exits with a value of 1.
 
 SEE ALSO

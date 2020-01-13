@@ -46,9 +46,11 @@ char *pattern, *replstr;
 int IFlag = 0;
 int JFlag = 0;
 int bFlag = 0;
+int cFlag = 0;
 int nFlag = 0;
 int byteCount = 0;
 int lineCount = 0;
+int execFailCount = 0;
 
 char **utility;
 
@@ -71,7 +73,7 @@ main(int argc, char **argv) {
 	byteCount = lineCount = 0;
 
 	/* GNU getopt(3) needs '+' to enable POSIXLY_CORRECT behavior. */
-	while ((ch = getopt(argc, argv, "+IJ:b:n:p:")) != -1) {
+	while ((ch = getopt(argc, argv, "+IJ:b:cn:p:")) != -1) {
 		switch(ch) {
 		case 'I':
 			IFlag = 1;
@@ -92,6 +94,9 @@ main(int argc, char **argv) {
 			if (byteCount <= 0) {
 				errx(EXIT_FAILURE, "byte count must be > 0");
 			}
+			break;
+		case 'c':
+			cFlag = 1;
 			break;
 		case 'n':
 			nFlag = 1;
@@ -137,7 +142,7 @@ main(int argc, char **argv) {
 
 	xpipe(argv, argc);
 
-	return EXIT_SUCCESS;
+	return execFailCount;
 }
 
 void
@@ -172,7 +177,7 @@ execCommand(char **argv, int argc, int num, char *data) {
 			}
 		}
 		execvp(largv[0], largv);
-		err(errno, "unable to execute utility");
+		err(errno, "unable to execute '%s'", largv[0]);
 		/* NOTREACHED */
 	} else {
 		(void)close(ipc[0]);
@@ -193,9 +198,13 @@ execCommand(char **argv, int argc, int num, char *data) {
 	if (WIFEXITED(status)) {
 		e = WEXITSTATUS(status);
 		if (e > 0) {
-			e = (e == ENOENT) ? EXEC_NOT_FOUND : EXEC_FAILURE;
-			exit(e);
-			/* NOTREACHED */
+			if (cFlag) {
+				execFailCount++;
+			} else {
+				e = (e == ENOENT) ? EXEC_NOT_FOUND : EXEC_FAILURE;
+				exit(e);
+				/* NOTREACHED */
+			}
 		}
 	} else if (WIFSIGNALED(status)) {
 		if (WTERMSIG(status) < NSIG) {
@@ -203,8 +212,12 @@ execCommand(char **argv, int argc, int num, char *data) {
 		} else {
 			warnx("%s terminated by signal %d", largv[0], WTERMSIG(status));
 		}
-		exit(EXIT_SIGNALLED);
-		/* NOTREACHED */
+		if (cFlag) {
+			execFailCount++;
+		} else {
+			exit(EXIT_SIGNALLED);
+			/* NOTREACHED */
+		}
 	}
 
 	if (freeLargv) {
@@ -218,7 +231,7 @@ execCommand(char **argv, int argc, int num, char *data) {
 void
 usage() {
 	(void)fprintf(stderr,
-"Usage: %s [-I] [-J replstr] [-b bytes] [-n lines] [-p pattern]\n"
+"Usage: %s [-Ic] [-J replstr] [-b bytes] [-n lines] [-p pattern]\n"
 "             [utility [argument ...]]\n", __progname);
 }
 

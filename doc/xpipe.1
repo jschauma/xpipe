@@ -7,7 +7,7 @@
 .Nd split input and feed it into the given utility
 .Sh SYNOPSIS
 .Nm
-.Op Fl I
+.Op Fl Ic
 .Op Fl J Ar replstr
 .Op Fl b Ar bytes
 .Op Fl n Ar lines
@@ -39,6 +39,10 @@ performed.
 Split input every
 .Ar num
 bytes.
+.It Fl c
+Continue even if
+.Ar utility
+failed.
 .It Fl n Ar num
 Split input every
 .Ar num
@@ -187,8 +191,25 @@ compressed files, named 1.gz, 2.gz, ... n.gz:
 .Sh EXIT STATUS
 The
 .Nm
-utility exits with a value of 0 if no error occurs.
-If
+command exits with a value of 0 if no error occurs.
+.Pp
+If the
+.Fl c
+flag is passed,
+.Nm
+will exit with an integer value representing the total
+number of invocations of the
+.Ar utility
+that failed.
+.Pp
+If the
+.Fl c
+was not passed, then any failure in the execution of
+the
+.Ar utility
+leads to the termination of
+.Nm .
+That is, if the
 .Ar utility
 cannot be found,
 .Nm
