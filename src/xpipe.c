@@ -300,9 +300,7 @@ escapecheck:
 				}
 			}
 
-			/* match and skip, so we then
-			 * compare the next character
-			 * */
+			/* match and skip, so we then compare the next character */
 			if (bl && !esc && (*compare == '^')) {
 				compare++;
 				mcount++;
@@ -426,7 +424,6 @@ replaceNum(char *input, int num) {
 
 	/* Not always exact, but always enough. */
 	int newlen = strlen(input) + ndigits + 1;
-	//if ((newstr = calloc(newlen, sizeof(char))) == NULL) {
 	if ((newstr = malloc(newlen)) == NULL) {
 		err(EXIT_FAILURE, "unable to malloc");
 		/* NOTREACHED */
