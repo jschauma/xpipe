@@ -16,10 +16,10 @@ containing a number of x509 certificates in PEM
 format, and you wish to extract e.g., the subject and
 validity dates from each.
 
-The openssl s\_client(1) utility can only accept a
+The openssl x509(1) utility can only accept a
 single certificate at a time, so you'll have to
 first split the input into individual files containing
-exactly one cert, then repeatedly run the s\_client(1)
+exactly one cert, then repeatedly run the x509(1)
 command against each file.
 
 And, let's be honest, you probably have to google how
