@@ -78,7 +78,7 @@ NAME
      xpipe -- split input and feed it into the given utility
 
 SYNOPSIS
-     xpipe [-Ic] [-J replstr] [-b bytes] [-n lines] [-p pattern]
+     xpipe [-IVc] [-J replstr] [-b bytes] [-n lines] [-p pattern]
 	   [utility [argument ...]]
 
 DESCRIPTION
@@ -95,6 +95,8 @@ OPTIONS
      -J replstr	 When constructing the command to execute, replace the occur-
 		 rence of replstr with the integer representing the number of
 		 invocation performed.
+
+     -V		 Print version number and exit.
 
      -b num	 Split input every num bytes.
 
