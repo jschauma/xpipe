@@ -39,6 +39,7 @@
 #include <string.h>
 #include <unistd.h>
 
+#define XPIPE_VERSION	"1.0"
 extern char *__progname;
 
 char *pattern, *replstr;
@@ -73,7 +74,7 @@ main(int argc, char **argv) {
 	byteCount = lineCount = 0;
 
 	/* GNU getopt(3) needs '+' to enable POSIXLY_CORRECT behavior. */
-	while ((ch = getopt(argc, argv, "+IJ:b:cn:p:")) != -1) {
+	while ((ch = getopt(argc, argv, "+IVJ:b:cn:p:")) != -1) {
 		switch(ch) {
 		case 'I':
 			IFlag = 1;
@@ -85,6 +86,10 @@ main(int argc, char **argv) {
 				errx(EXIT_FAILURE, "replstr may not be empty");
 			}
 			break;
+		case 'V':
+			printf("%s version %s\n", __progname, XPIPE_VERSION);
+			exit(EXIT_SUCCESS);
+			/* NOTREACHED */
 		case 'b':
 			bFlag = 1;
 			lineCount = nFlag = 0;
@@ -231,8 +236,17 @@ execCommand(char **argv, int argc, int num, char *data) {
 void
 usage() {
 	(void)fprintf(stderr,
-"Usage: %s [-Ic] [-J replstr] [-b bytes] [-n lines] [-p pattern]\n"
-"             [utility [argument ...]]\n", __progname);
+"Usage: %s [-IVc] [-J replstr] [-b bytes] [-n lines] [-p pattern]\n"
+"             [utility [argument ...]]\n"
+"    -I          don't write incomplete data.\n"
+"    -J replstr  replace replstr with invocation number\n"
+"    -V          print version number and exit\n"
+"    -b num      split input every num bytes\n"
+"    -c          continue even if utility fails\n"
+"    -n num      split input every num lines\n"
+"    -p pattern  split input by pattern\n"
+, __progname);
+
 }
 
 void

@@ -1,5 +1,5 @@
 .\" Originally written by Jan Schaumann <jschauma@netmeister.org> in January 2020.
-.Dd January 12, 2020
+.Dd May 13, 2022
 .Dt xpipe 1
 .Os
 .Sh NAME
@@ -7,7 +7,7 @@
 .Nd split input and feed it into the given utility
 .Sh SYNOPSIS
 .Nm
-.Op Fl \&Ic 
+.Op Fl \&IVc 
 .Op Fl J Ar replstr
 .Op Fl b Ar bytes
 .Op Fl n Ar lines
@@ -35,6 +35,8 @@ occurrence of
 .Ar replstr
 with the integer representing the number of invocation
 performed.
+.It Fl V
+Print version number and exit.
 .It Fl b Ar num
 Split input every
 .Ar num
