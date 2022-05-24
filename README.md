@@ -57,6 +57,14 @@ to '/usr/local' but you can change the PREFIX:
 $ make PREFIX=~ install
 ```
 
+If you are using macOS with
+[Homebrew](https://brew.sh/), then you should be able
+to simply run this command:
+
+```
+$ brew install xpipe
+```
+
 Platforms
 =========
 
