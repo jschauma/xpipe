@@ -111,6 +111,13 @@ That is, you cannot specify regular expressions or
 shell globs; all characters or bytes are matched
 verbatim with the exception of the following:
 .Bl -tag -width ch_
+.It .
+This character matches any character except the end of
+the line.
+To match a literal '.', use '\\.'.
+.It \(rs
+\'\\' is the escape character.
+To match a literal '\\', use '\\\\'.
 .It ^
 If the '^' character is specified at the beginning of
 the pattern, then it will anchor the pattern at the

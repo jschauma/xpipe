@@ -39,7 +39,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#define XPIPE_VERSION	"1.0"
+#define XPIPE_VERSION	"1.1"
 extern char *__progname;
 
 char *pattern, *replstr;
@@ -328,16 +328,23 @@ escapecheck:
 				goto nomatch;
 			}
 
-			/* We match as follows:
-			 * - exact matches match
-			 * - unescaped '$' at end of line matches
-			 * - '\n' at end of line matches
-			 * - '\t' matches tabs
-			 */
+			/* exact matches match */
 			if ((ch == *compare) ||
+				/* unescaped '.' matches anything except end of line */
+				(!esc && !el && (*compare == '.')) ||
+
+				/* escaped '.' matches a '.' */
+				(esc && (ch == '.') && (*compare == '.')) ||
+
+				/* unescaped '$' at end of line matches */
 				(!esc && el && (*compare == '$')) ||
+
+				/* '\n' at end of line matches */
 				(esc && el && (*compare == 'n')) ||
+
+				/* '\t' matches tabs */
 				(esc && (ch == '\t') && (*compare == 't'))) {
+
 				mcount++;
 				compare++;
 			} else {
