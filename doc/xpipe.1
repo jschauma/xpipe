@@ -1,5 +1,5 @@
 .\" Originally written by Jan Schaumann <jschauma@netmeister.org> in January 2020.
-.Dd May 13, 2022
+.Dd Sep 09, 2022
 .Dt xpipe 1
 .Os
 .Sh NAME
@@ -170,25 +170,28 @@ ending in the given pattern:
 .Sh EXAMPLES
 The following examples illustrate common usage of this tool.
 .Pp
-To count the number of words in each paragraph of 'Don
-Quijote':
+Suppose you have a large number of files in your
+current directory and wish to create tar archives
+containing 1000 files each:
 .Bd -literal -offset indent
-curl -s https://www.gutenberg.org/cache/epub/2000/pg2000.txt | \\
-        tr -d '^M' | \\
-        xpipe -p '^$' wc -w
-.Ed
-.Pp
-To extract the subjects of all certificates in a
-standard PEM formatted x.509 trust bundle:
-.Bd -literal -offset indent
-<certs.pem xpipe -p '^-----END CERTIFICATE-----$' \\
-        openssl x509 -noout -subject
+$ ls | wc -l
+100000
+$ ls | xpipe -n 1000 -J % tar zcf ../archives/%.tgz --files-from -
+$ ls ../archives/*.tgz | wc -l
+100
 .Ed
 .Pp
 To split a large, uncompressed log file into multiple,
 compressed files, named 1.gz, 2.gz, ... n.gz:
 .Bd -literal -offset indent
-<logfile xpipe -n 1000 -J % /bin/sh -c "gzip >%.gz"
+$ <logfile xpipe -n 1000 -J % /bin/sh -c "gzip >%.gz"
+.Ed
+.Pp
+To extract the subjects of all certificates in a
+standard PEM formatted x.509 trust bundle:
+.Bd -literal -offset indent
+$ <certs.pem xpipe -p '^-----END CERTIFICATE-----$' \\
+        openssl x509 -noout -subject
 .Ed
 .Sh EXIT STATUS
 The
