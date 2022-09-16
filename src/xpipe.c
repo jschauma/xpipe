@@ -277,8 +277,8 @@ usage() {
 void
 xpipe(char **argv, int argc) {
 	int num = 1;
-	void *chunk;
-	char *rest;
+	void *chunk = NULL;
+	char *rest = NULL;
 
 	regex_t preg;
 
