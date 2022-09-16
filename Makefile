@@ -3,7 +3,7 @@ OBJS= src/xpipe.o
 
 PREFIX?=/usr/local
 
-CFLAGS+= -g -Wall -Werror -Wextra -I${PREFIX}/include
+CFLAGS+= -Wall -Werror -Wextra -I${PREFIX}/include
 LDFLAGS+= -L${PREFIX}/lib
 LIBS= -lm
 
