@@ -1,5 +1,4 @@
-Quick Summary
-=============
+# Quick Summary
 
 The xpipe command reads input from stdin and splits it
 by the given number of bytes, lines, or if matching
@@ -70,8 +69,7 @@ subject= /C=ZA/ST=Western Cape/L=Cape Town/O=Thawte Consulting cc/OU=Certificati
 For more details and examples, please see the
 [manual page](https://github.com/jschauma/xpipe/blob/master/doc/xpipe.1.txt).
 
-Installation
-============
+# Installation
 
 To install the command and manual page somewhere
 convenient, run `make install`; the Makefile defaults
@@ -81,6 +79,16 @@ to '/usr/local' but you can change the PREFIX:
 $ make PREFIX=~ install
 ```
 
+_Note_: on Linux systems, you will need
+`strlcat(3)/strlcpy(3)`.  These are provided by
+`libbsd`, so you will need to install `libbsd` and
+possibly `libbsd-devel` or equivalent, depending on
+your Linux distribution.
+
+## OS / Package Manager specific notes:
+
+### Homebrew
+
 If you are using macOS with
 [Homebrew](https://brew.sh/), then you should be able
 to simply run this command:
@@ -89,14 +97,13 @@ to simply run this command:
 $ brew install xpipe
 ```
 
-_Note_: on Linux systems, you will need
-`strlcat(3)/strlcpy(3)`.  These are provided by
-`libbsd`, so you will need to install `libbsd` and
-possibly `libbsd-devel` or equivalent, depending on
-your Linux distribution.
+### ArchLinux
 
-Platforms
-=========
+If you are using Archlinux, a PKGBUILD is available at
+https://aur.archlinux.org/packages/xpipe-git. Use your
+favourite AUR helper.
+
+# Platforms
 
 `xpipe(1)` was developed on a NetBSD 8.0 system.  It was
 tested and confirmed to build and pass all tests on:
