@@ -89,16 +89,21 @@ to simply run this command:
 $ brew install xpipe
 ```
 
+_Note_: on Linux systems, you will need
+`strlcat(3)/strlcpy(3)`.  These are provided by
+`libbsd`, so you will need to install `libbsd` and
+possibly `libbsd-devel` or equivalent, depending on
+your Linux distribution.
+
 Platforms
 =========
 
-xpipe(1) was developed on a NetBSD 8.0 system.  It was
+`xpipe(1)` was developed on a NetBSD 8.0 system.  It was
 tested and confirmed to build and pass all tests on:
 
 - NetBSD 8.0
-- macOS 10.15.2
-- RHEL 6.10
-- RHEL 7.6
+- macOS 12.6
+- Fedora 36
 
 If you run into build/test issues, please [email
 me](mailto:jschauma@netmeister.org).

@@ -8,11 +8,9 @@ begin
 
 <"${PATTERNFILE}" ${XPIPE} -I -J % -c -p 'e.*g' /bin/sh -c "cat >${TDIR}/%.out" 2>"${STDERR}"
 
-WANTED="12.out"
+WANTED="12"
 
-cd ${TDIR}
-
-GOT="$(ls -rt *.out | tail -1)"
+GOT=$(echo $(ls ${TDIR}/*.out | wc -l))
 
 if [ x"${WANTED}" != x"${GOT}" ]; then
 	fail

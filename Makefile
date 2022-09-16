@@ -4,6 +4,8 @@ OBJS= src/xpipe.o
 CFLAGS= -g -Wall -Werror -Wextra
 LIBS= -lm
 
+OS!=uname
+
 PREFIX?=/usr/local
 
 .PHONY: test
@@ -21,8 +23,19 @@ help:
 .c.o:
 	${CC} ${CFLAGS} -c $< -o $@
 
-${NAME}: ${OBJS}
-	${CC} -o ${NAME} ${OBJS} ${LIBS}
+# Sorry, no ./configure, and portable make(1) is a PITA.
+configure:
+	@( 							\
+		if [ "x${OS}" = x"Linux" ]; then		\
+			if [ ! -d /usr/include/bsd ]; then	\
+				echo "Please install 'libbsd' and 'libbsd-devel'." >&2; \
+				exit 1;				\
+			fi;					\
+		fi; 						\
+	)
+
+${NAME}: configure ${OBJS}
+	${CC} -o ${NAME} ${OBJS} ${LIBS} $$(echo ${OS} | sed -n -e 's/Linux/-lbsd/p')
 
 clean:
 	rm -fr ${NAME} ${OBJS}

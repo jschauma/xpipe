@@ -37,8 +37,14 @@
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <unistd.h>
+
+#ifdef __linux
+#  include <bsd/string.h>
+#else
+#  include <string.h>
+#endif
+
 
 #define XPIPE_VERSION	"2.0"
 extern char *__progname;
