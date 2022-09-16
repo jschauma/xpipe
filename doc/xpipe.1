@@ -1,5 +1,5 @@
 .\" Originally written by Jan Schaumann <jschauma@netmeister.org> in January 2020.
-.Dd Sep 09, 2022
+.Dd Sep 15, 2022
 .Dt xpipe 1
 .Os
 .Sh NAME
@@ -106,53 +106,10 @@ flag is specified,
 will split input by the given pattern with each chunk
 including the pattern as the last bytes.
 .Pp
-A pattern is, by and large, a simple, fixed string.
-That is, you cannot specify regular expressions or
-shell globs; all characters or bytes are matched
-verbatim with the exception of the following:
-.Bl -tag -width ch_
-.It .
-This character matches any character except the end of
-the line.
-To match a literal '.', use '\\.'.
-.It \(rs
-\'\\' is the escape character.
-To match a literal '\\', use '\\\\'.
-.It ^
-If the '^' character is specified at the beginning of
-the pattern, then it will anchor the pattern at the
-beginning of the line.
-.Pp
-To match a literal '^' at the beginning of the line,
-escape the character using '^\\^'.
-For example, to match a line beginning with the string
-\'^foo', you'd use the pattern '^\\^foo'.
-.It $
-If the '$' character is specified at the end of the
-pattern (i.e., as the last character), then it will
-anchor the pattern at the end of the line.
-.Pp
-To match a literal '$' at the end of the line,
-escape the character using '\\$$'.
-For example, to match a line ending with 'foo', you'd
-use the pattern 'foo$'; To match a line ending with
-\'foo$', you'd use 'foo\\$$'.
-.It \(rsn
-This will match a new line (ASCII 10).
-The difference to '$' is that you can match a \\n
-anywhere in your pattern, while a '$' will only match
-at the end of he line.
-.Pp
-For example, to match a line ending in 'foo' followed
-by a line beginning with 'bar', you'd use the pattern
-\'foo\(rsnbar'.
-.It \(rst
-This will match a tab character (ASCII 9).
-.Pp
-For example, to match a line beginning with two tabs
-followed by the string 'foo', you'd use the pattern
-\'^\\t\\tfoo'.
-.El
+A pattern is a common extended regular expression as
+described in
+.Xr re_format 7 ,
+and is matched against each line of the input data.
 .Sh COMMAND INVOCATION
 .Nm
 will invoke the given
@@ -189,7 +146,13 @@ $ ls ../archives/*.tgz | wc -l
 .Ed
 .Pp
 To split a large, uncompressed log file into multiple,
-compressed files, named 1.gz, 2.gz, ... n.gz:
+compressed files, named 1.gz, 2.gz, ... n.gz, you
+could use
+.Xr split 1 ,
+and then iterate over each file and compress it; with
+.Nm ,
+this becomes a one-liner:
+.Ed
 .Bd -literal -offset indent
 $ <logfile xpipe -n 1000 -J % /bin/sh -c "gzip >%.gz"
 .Ed
@@ -242,7 +205,8 @@ exits with a value of 1.
 .Sh SEE ALSO
 .Xr split 1 ,
 .Xr tee 1 ,
-.Xr xargs 1
+.Xr xargs 1 ,
+.Xr re_format 7
 .Sh HISTORY
 .Nm
 was originally written by

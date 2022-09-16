@@ -6,7 +6,7 @@ NAME="split by ^\$"
 
 begin
 
-WANTED="2 2 2 2 2 2 3 3 3 4 1"
+WANTED="2 2 2 2 2 2 3 3 4 5 2 1"
 GOT="$(echo $(${XPIPE} -p '^$' wc -l <patternfile | cut -f1))"
 
 if [ x"${WANTED}" != x"${GOT}" ]; then

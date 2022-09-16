@@ -2,12 +2,12 @@
 
 . ./setup
 
-NAME="'-c' behavior"
-WANTED="$(grep -c '^a line' "${PATTERNFILE}")"
+NAME="escaped dot matches dot"
+WANTED="$(grep -c ' \. ' "${PATTERNFILE}")"
 
 begin
 
-<"${PATTERNFILE}" ${XPIPE} -I -c -p '^a line' notfound 2>/dev/null
+<"${PATTERNFILE}" ${XPIPE} -I -c -p ' \. ' notfound 2>/dev/null
 GOT=$?
 if [ x"${GOT}" != x"${WANTED}" ]; then
 	echo "Expected exit value ${WANTED}, but got '${GOT}'." >> "${STDERR}"

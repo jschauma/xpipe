@@ -33,13 +33,14 @@
 #include <errno.h>
 #include <limits.h>
 #include <math.h>
+#include <regex.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
-#define XPIPE_VERSION	"1.1"
+#define XPIPE_VERSION	"2.0"
 extern char *__progname;
 
 char *pattern, *replstr;
@@ -56,7 +57,8 @@ int execFailCount = 0;
 char **utility;
 
 void execCommand(char **, int, int, char *);
-char *getNextChunk(int);
+void *getNextByteChunk();
+void *getNextChunk(regex_t, char *);
 char *replaceNum(char *, int);
 char **replaceNumInArgs(char **, int, int);
 void usage();
@@ -123,6 +125,11 @@ main(int argc, char **argv) {
 			}
 			if (pattern != NULL && *pattern == '\0') {
 				errx(EXIT_FAILURE, "pattern may not be empty");
+				/* NOTREACHED */
+			}
+			if (*pattern == '*') {
+				errx(EXIT_FAILURE, "invalid wildcard at beginning of pattern");
+				/* NOTREACHED */
 			}
 			break;
 		default:
@@ -185,13 +192,25 @@ execCommand(char **argv, int argc, int num, char *data) {
 		err(errno, "unable to execute '%s'", largv[0]);
 		/* NOTREACHED */
 	} else {
+		/* If the command fails, we'd get SIGPIPE upon
+		 * write(2), so let's ignore that. */
+		if (signal(SIGPIPE, SIG_IGN) == SIG_ERR) {
+			err(EXIT_FAILURE, "unable to ignore SIGPIPE");
+			/* NOTREACHED */
+		}
 		(void)close(ipc[0]);
 		int count = strlen(data);
 		if (write(ipc[1], data, count) != count) {
-			err(EXIT_FAILURE, "unable to write to pipe");
-			/* NOTREACHED */
+			if (errno != EPIPE) {
+				err(EXIT_FAILURE, "unable to write to pipe");
+				/* NOTREACHED */
+			}
 		}
 		(void)close(ipc[1]);
+		if (signal(SIGPIPE, SIG_DFL) == SIG_ERR) {
+			err(EXIT_FAILURE, "unable to restore SIGPIPE");
+			/* NOTREACHED */
+		}
 	}
 
 	if (waitpid(pid, &status, 0) < 0) {
@@ -252,153 +271,183 @@ usage() {
 void
 xpipe(char **argv, int argc) {
 	int num = 1;
-	int last = '\n';
+	void *chunk;
+	char *rest;
+
+	regex_t preg;
+
+	if (pattern) {
+		if (regcomp(&preg, pattern, REG_EXTENDED | REG_NEWLINE) != 0) {
+			errx(EXIT_FAILURE, "Invalid pattern");
+			/* NOTREACHED */
+		}
+
+		if ((rest = malloc(BUFSIZ)) == NULL) {
+			errx(EXIT_FAILURE, "Unable to malloc");
+			/* NOTREACHED */
+		}
+	}
 
 	for (;;) {
-		char *nextChunk;
-		nextChunk = getNextChunk(last);
-		if ((nextChunk == NULL) || (strlen(nextChunk) == 0)) {
+		if (bFlag) {
+			chunk = getNextByteChunk();
+		} else if (nFlag) {
+			chunk = getNextChunk(preg, NULL);
+		} else if (pattern) {
+			chunk = getNextChunk(preg, rest);
+		}
+
+		if (chunk == NULL) {
 			break;
 		}
-		last = nextChunk[strlen(nextChunk)];
-		execCommand(argv, argc, num, nextChunk);
-		free(nextChunk);
+		execCommand(argv, argc, num, chunk);
+		if (chunk) {
+			free(chunk);
+		}
 		num++;
+	}
+
+	if (pattern) {
+		regfree(&preg);
+		if (rest) {
+			free(rest);
+		}
 	}
 }
 
-char *
-getNextChunk(int last) {
-	int ch, bl, bsize, el, esc, plen, prevesc;
-	int count, lcount, mcount;
+void *
+getNextChunk(regex_t preg, char *rest) {
+	int lcount = 0, matched = 0, total = 0;
 
-	bl = count = el = esc = lcount = mcount = prevesc = 0;
-	if (last == '\n') {
-		bl = 1;
+	size_t nmatch = 1;
+	regmatch_t pmatch[1];
+
+	char buf[BUFSIZ];
+	bzero(buf, BUFSIZ);
+
+	int dlen = BUFSIZ;
+	int rlen = 0;
+	if (rest) {
+		rlen = strlen(rest);
+		if (rlen > dlen) {
+			dlen = rlen;
+		}
 	}
 
-	char *buf, *compare, *data;
-
-	bsize = BUFSIZ;
-	if ((data = calloc(bsize, sizeof(char))) == NULL) {
-		err(EXIT_FAILURE, "Unable to allocate memory");
+	char *data;
+	if ((data = malloc(dlen)) == NULL) {
+		errx(EXIT_FAILURE, "Unable to malloc data");
 		/* NOTREACHED */
 	}
-	buf = data;
+	bzero(data, dlen);
 
-	compare = pattern;
-	plen = pattern ? strlen(pattern) : 0;
+	if (rest) {
+		(void)strlcpy(data, rest, dlen);
+		total += rlen;
+		bzero(rest, rlen);
 
-	while ((ch = getchar()) != EOF) {
-		count++;
-
-		if (el) {
-			el = 0;
-			bl = 1;
+		if (regexec(&preg, data, nmatch, pmatch, REG_NOTBOL | REG_NOTEOL) == 0) {
+			int bytes = (int)pmatch[0].rm_eo + 1;
+			(void)strlcpy(rest, &data[bytes], rlen);
+			return data;
 		}
-		if (ch == '\n') {
-			lcount++;
-			el = 1;
+	}
+
+	int plen = 0;
+       	if (pattern) {
+		plen = strlen(pattern);
+	}
+
+	char *line = NULL;
+	size_t lsize = 0;
+	int n = 0;
+
+	while ((n = getline(&line, &lsize, stdin)) != -1) {
+		lcount++;
+		int bytes = n + 1; /* plus NUL */
+		if (pattern &&
+			(regexec(&preg, line, nmatch, pmatch, REG_NOTEOL) == 0)) {
+
+			matched = 1;
+			bytes = (int)pmatch[0].rm_eo;
+
+			/* If we matched an EOL, increment so we add it to the
+			 * returned data instead of rest. */
+			if ((pattern[plen - 1] == '$') &&
+					/* pattern was '$' */
+					((plen == 1) ||
+					 /* or it was _not_ '[...]\$' */
+					 ((strlen(pattern) > 1) &&
+					  (pattern[strlen(pattern) - 2] != '\\')))) {
+				bytes++;
+			}
+
+			if (bytes < n) {
+				if (bytes > BUFSIZ) {
+					if ((rest = realloc(data, BUFSIZ + bytes)) == NULL) {
+						errx(EXIT_FAILURE, "Unable to realloc rest");
+						/* NOTREACHED */
+					}
+				}
+				(void)strlcpy(rest, &line[bytes], BUFSIZ);
+			}
 		}
-		if (pattern) {
-escapecheck:
-			if (*compare == '\\') {
-				esc = !esc;
-				/* '\' at end of pattern */
-				if (esc && (strlen(compare) == 1)) {
-					esc = 0;
-				}
-				if (esc) {
-					compare++;
-					plen--;
-				}
-			}
 
-			/* match and skip, so we then compare the next character */
-			if (bl && !esc && (*compare == '^')) {
-				compare++;
-				mcount++;
-				/* the new char may be an escape char, so
-				 * we have to go back and check again */
-				goto escapecheck;
-			}
-
-			/* an unescaped '^' not at the beginning of the line */
-			if (!esc && !bl && (*compare == '^')) {
-				goto nomatch;
-			}
-
-			/* exact matches match */
-			if ((ch == *compare) ||
-				/* unescaped '.' matches anything except end of line */
-				(!esc && !el && (*compare == '.')) ||
-
-				/* escaped '.' matches a '.' */
-				(esc && (ch == '.') && (*compare == '.')) ||
-
-				/* unescaped '$' at end of line matches */
-				(!esc && el && (*compare == '$')) ||
-
-				/* '\n' at end of line matches */
-				(esc && el && (*compare == 'n')) ||
-
-				/* '\t' matches tabs */
-				(esc && (ch == '\t') && (*compare == 't'))) {
-
-				mcount++;
-				compare++;
-			} else {
-nomatch:
-				mcount = 0;
-				compare = pattern;
-				plen = strlen(pattern);
-				if (!esc && prevesc) {
-					prevesc = 0;
-					goto escapecheck;
-				}
-			}
-
-			if (esc) {
-				prevesc = 1;
-				esc = 0;
-			}
-
-		}
-		bl = 0;
-
-		if (count == bsize) {
-			bsize += BUFSIZ;
-			if ((buf = realloc(buf, bsize)) == NULL) {
-				err(EXIT_FAILURE, "Unable to re-allocate memory");
+		if ((total + bytes + 1) > BUFSIZ) {
+			if ((data = realloc(data, total + bytes)) == NULL) {
+				errx(EXIT_FAILURE, "Unable to realloc data");
 				/* NOTREACHED */
 			}
 		}
-		data = &buf[count-1];
-		*data++ = ch;
+		(void)strlcat(data, line, total + bytes + 1);
+		total = strlen(data);
 
-		if (bFlag && (count == byteCount)) {
-			break;
-		} else if (nFlag && (lcount == lineCount)) {
-			break;
+		if (pattern && matched) {
+			return data;
 		}
-		if (pattern && (mcount == plen)) {
+
+		if (nFlag && (lcount == lineCount)) {
 			break;
 		}
 	}
-	*data = '\0';
 
 	if (ferror(stdin)) {
-		err(EXIT_FAILURE, "Unable to read data from stdin");
+		errx(EXIT_FAILURE, "Unable to readline");
+		/* NOTREACHED */
+	}
+	free(line);
+
+	if ((total == 0) ||
+		(IFlag && (pattern && !matched)) ||
+		(IFlag && nFlag && (lcount < lineCount))) {
+		if (data) {
+			free(data);
+		}
+		return NULL;
+	}
+
+	/* If we get here, we have an incomplete chunk at EOF. */
+	return data;
+}
+
+void *
+getNextByteChunk() {
+	int n;
+
+	char *buf;
+	if ((buf = malloc(byteCount)) == NULL) {
+		errx(EXIT_FAILURE, "Unable to malloc buffer");
+		/* NOTREACHED */
+	}
+	bzero(buf, byteCount);
+
+	if ((n = read(STDIN_FILENO, buf, byteCount)) < 0) {
+		errx(EXIT_FAILURE, "Unable to read data");
 		/* NOTREACHED */
 	}
 
-	if (IFlag) {
-	       if ((bFlag && (count != byteCount)) ||
-			       (nFlag && (lcount != lineCount)) ||
-			       (pattern && (mcount != plen))) {
-			free(buf);
-			buf = NULL;
-	       }
+	if ((n == 0) || ((n < byteCount) && IFlag)) {
+		return NULL;
 	}
 
 	return buf;

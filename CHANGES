@@ -1,2 +1,6 @@
+Version 2.0
+ * support extended regular expressions via regex(3)
+ * catch SIGPIPE
+
 Version 1.0
  * add '-V' to print version number

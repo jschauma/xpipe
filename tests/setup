@@ -11,8 +11,8 @@ if [ x"${UNAME}" = x"Linux" ]; then
 	STAT_S="stat -c '%s'"
 fi
 
-BYTEFILE="${TDIR}/bytes"
-LINEFILE="${TDIR}/lines"
+BYTEFILE="./bytes"
+LINEFILE="./lines"
 PATTERNFILE="./patternfile"
 CERTFILE="./certs"
 

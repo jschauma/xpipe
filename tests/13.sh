@@ -2,12 +2,15 @@
 
 . ./setup
 
-NAME="openssl example"
+NAME="gzip example"
 
 begin
 
-WANTED="3"
-GOT="$(${XPIPE} -p '^-----END CERTIFICATE-----$' openssl x509 -noout -subject <"${CERTFILE}" | grep -c "^subject=")"
+WANTED="$(echo $(wc -l <"${CERTFILE}"))"
+
+<"${CERTFILE}" ${XPIPE} -n 10 -J % /bin/sh -c "gzip >${TDIR}/%.gz"
+
+GOT="$(echo $(gzip -d -c ${TDIR}/*.gz | wc -l))"
 
 if [ x"${WANTED}" != x"${GOT}" ]; then
 	echo "Unexpected output '${GOT}'." >> "${STDERR}"

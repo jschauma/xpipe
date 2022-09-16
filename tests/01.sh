@@ -6,7 +6,7 @@ NAME="split by bytes"
 
 begin
 
-<"${BYTEFILE}" ${XPIPE} -J % -b 100 /bin/sh -c "cat >${TDIR}/%.out"
+<"${BYTEFILE}" ${XPIPE} -J % -b 100 /bin/sh -c "cat >${TDIR}/%.out" 2>"${STDERR}"
 
 WANTED="1.out
 2.out

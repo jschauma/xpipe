@@ -2,12 +2,12 @@
 
 . ./setup
 
-NAME="split by foo\\nbar"
+NAME="openssl example"
 
 begin
 
-WANTED="$(egrep -c '(^bar|ends with foo)' "${PATTERNFILE}")"
-GOT="$(${XPIPE} -I -p 'foo\nbar' cat <"${PATTERNFILE}" | egrep -c '(^bar|ends with foo)')"
+WANTED="3"
+GOT="$(${XPIPE} -p '^-----END CERTIFICATE-----$' openssl x509 -noout -subject <"${CERTFILE}" | grep -c "^subject=")"
 
 if [ x"${WANTED}" != x"${GOT}" ]; then
 	echo "Unexpected output '${GOT}'." >> "${STDERR}"
