@@ -1,3 +1,7 @@
+Version 2.1
+ * misc build fixes to accomodate linux (and notably
+   linux via homebrew)
+
 Version 2.0
  * support extended regular expressions via regex(3)
  * catch SIGPIPE
