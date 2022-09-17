@@ -46,7 +46,7 @@
 #endif
 
 
-#define XPIPE_VERSION	"2.1"
+#define XPIPE_VERSION	"2.2"
 extern char *__progname;
 
 char *pattern, *replstr;
