@@ -506,13 +506,14 @@ replaceNum(char *input, int num) {
 	}
 	bzero(newstr, newlen);
 
+	int n = 0;
 	for (;;) {
 		if ((ptr = strstr(input, replstr)) == NULL) {
-			(void)strncat(newstr, input, strlen(input));
+			(void)strlcat(newstr, input, newlen);
 			break;
 		}
-		(void)strncat(newstr, input, ptr - input);
-		(void)strncat(newstr, numstr, ndigits);
+		n = strlcpy(newstr, input, ptr - input + 1);
+		(void)strlcat(newstr, numstr, n + ndigits + 1);
 		input = ptr + strlen(replstr);
 	}
 	return newstr;
