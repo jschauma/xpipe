@@ -87,6 +87,12 @@ your Linux distribution.
 
 ## OS / Package Manager specific notes:
 
+### ArchLinux
+
+If you are using Archlinux, a PKGBUILD is available at
+https://aur.archlinux.org/packages/xpipe-git. Use your
+favourite AUR helper.
+
 ### Homebrew
 
 If you are using macOS with
@@ -97,11 +103,15 @@ to simply run this command:
 $ brew install xpipe
 ```
 
-### ArchLinux
+### pkgsrc
 
-If you are using Archlinux, a PKGBUILD is available at
-https://aur.archlinux.org/packages/xpipe-git. Use your
-favourite AUR helper.
+If you are using [pkgsrc](https://pkgsrc.org), then
+you should find `xpipe(1)` under `sysutils`:
+
+```
+$ cd pkgsrc/sysutils/xpipe
+$ make install
+```
 
 # Platforms
 
